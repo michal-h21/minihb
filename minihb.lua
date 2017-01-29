@@ -82,8 +82,8 @@ local function shape(text, lang, script, direction)
     if textdir == "rtl" then
       buf:reverse()
     end
-    -- harfbuzz.shape(hb_font, buf, { direction =  textdir, script = script, language = lang, features = features})
-    harfbuzz.shape(hb_font, buf, { direction =  textdir, script = script, language = lang, features="+liga"})
+    harfbuzz.shape(hb_font, buf, { direction =  textdir, script = script, language = lang, features = features})
+    -- harfbuzz.shape(hb_font, buf, { direction =  textdir, script = script, language = lang, features="+liga"})
     if textdir == "rtl" then
       buf:reverse()
     end
