@@ -27,15 +27,21 @@ local function loadfont(fontid)
       -- for k, v in pairs(realfont) do
         -- print("xxx", k,v)
       -- end
-      currentfont.language = realfont.specification.language
-      currentfont.script   = realfont.specification.script
       currentfont.unimap   = realfont.resources.unicodes
       local filename       = realfont.filename 
       currentfont.filename = filename
       currentfont.face     = loadface(filename) 
-      currentfont.features = realfont.specification.features
+      local features       = realfont.specification.features.normal
+      currentfont.features = features
+      currentfont.language = features.language
+      currentfont.script   = features.script
       currentfont.units_per_em = realfont.units_per_em
+      -- currentfont.resources = realfont.shared.rawdata.resources
       currentfont.size     = realfont.size
+      local parameters     = realfont.parameters
+      currentfont.space = parameters.space
+      currentfont.space_shrink = parameters.space_shrink
+      currentfont.space_stretch = parameters.space_stretch
       currentfont.descriptions = realfont.shared.rawdata.descriptions
       -- luaotfload doesn't preserve backmap, at least I can't find it
       -- so we must load the font again
@@ -54,12 +60,6 @@ local function loadfont(fontid)
   return currentfont
 end
 
-local function getunimap(fontid)
-  -- 
-  local currentfont = loadfont(fontid)
-  local unimap = currentfont.unimap or {}
-  return unimap
-end
   
 
 function M.unimap(fontid, glyph)
@@ -67,9 +67,6 @@ function M.unimap(fontid, glyph)
   -- local unimap = getunimap(fontid)
   local currentfont = loadfont(fontid)
   local unimap = currentfont.backmap
-  local descriptions = currentfont.descriptions 
-  local desc = descriptions[glyph] or {}
-  print("unimap", fontid, glyph, unimap,  unimap[glyph], desc.name, desc.unicode, currentfont.backmap[glyph]  )
   return unimap[glyph]
 end
 
@@ -78,6 +75,21 @@ function M.face(fontid)
   local currentfont = loadfont(fontid)
   return currentfont.face
 end
+
+function M.features(fontid)
+  local t= {}
+  local currentfont = loadfont(fontid)
+  local features = currentfont.features
+  -- we are interested only features which 
+  -- are explicitly true at the moment
+  for feature,status in pairs(features) do
+    if status== true then
+      t[#t+1] = "+" ..feature
+    end
+  end
+  return table.concat(t, ",") .. ","
+end
+  
 
 function M.get_font(fontid)
   if not fontid then return nil end
