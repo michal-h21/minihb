@@ -38,6 +38,7 @@ local function loadfont(fontid)
       currentfont.units_per_em = realfont.units_per_em
       -- currentfont.resources = realfont.shared.rawdata.resources
       currentfont.size     = realfont.size
+      local mag = currentfont.size / currentfont.units_per_em
       local parameters     = realfont.parameters
       currentfont.space = parameters.space
       currentfont.space_shrink = parameters.space_shrink
@@ -50,17 +51,48 @@ local function loadfont(fontid)
       local fonttable = fontloader.to_table(f)
       fontloader.close(f)
       currentfont.backmap  = fonttable.map.backmap
+      currentfont.map      = fonttable.map.map
+      currentfont.glyphs   = fonttable.glyphs
       for k,v in pairs(currentfont) do
         print("loaded font", k,v)
       end
+      for char,glyph in pairs(currentfont.map) do
+        local desc = realfont.characters[char]
+        if not desc then
+          print("glyphs", char ,glyph)
+          local glyph_table = currentfont.glyphs[glyph]
+          realfont.characters[char] = {
+            index = glyph,
+            unicode = char,
+            width = glyph_table.width * mag,
+            name = glyph_table.name
+          }     
+          if glyph_table.boundingbox[4] then
+            realfont.characters[char].height = glyph_table.boundingbox[4] * mag
+          end  
+          if glyph_table.boundingbox[2] then
+            realfont.characters[char].depth = -glyph_table.boundingbox[2] * mag
+          end    
+        else
+          -- print("glyph", k,v)
+          -- for x,y in pairs(desc) do
+          --   print(x,y)
+          -- end
+        end
+        -- for x,y in pairs(v) do
+        -- print(x,y)
+        -- end
+      end
+
 
     end
+    font.setfont(fontid, realfont)
     usedfonts[fontid] = currentfont
   end
   return currentfont
 end
 
-  
+
 
 function M.unimap(fontid, glyph)
   if not fontid then return nil end
@@ -84,12 +116,12 @@ function M.features(fontid)
   -- are explicitly true at the moment
   for feature,status in pairs(features) do
     if status== true then
-      t[#t+1] = "+" ..feature
+      t[#t+1] = feature
     end
   end
   return table.concat(t, ",") .. ","
 end
-  
+
 
 function M.get_font(fontid)
   if not fontid then return nil end
