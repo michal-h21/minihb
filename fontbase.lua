@@ -28,9 +28,9 @@ local function loadfont(fontid)
         -- print("xxx", k,v)
       -- end
       currentfont.unimap   = realfont.resources.unicodes
-      local filename       = realfont.filename 
+      local filename       = realfont.filename
       currentfont.filename = filename
-      currentfont.face     = loadface(filename) 
+      currentfont.face     = loadface(filename)
       local features       = realfont.specification.features.normal
       currentfont.features = features
       currentfont.language = features.language

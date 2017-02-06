@@ -21,11 +21,11 @@ local whitespace = {
   [0x000A] = true,
   [0x000B] = true,
   [0x000C] = true,
-  [0x000D] = true,    
+  [0x000D] = true,
   [0x0020] = true,
-  [0x0085] = true, 
+  [0x0085] = true,
   [0x00A0] = true,
-  [0x1680] = true, 
+  [0x1680] = true,
   [0x2000] = true,
   [0x2001] = true,
   [0x2002] = true,
@@ -40,7 +40,7 @@ local whitespace = {
   [0x2028] = true,
   [0x2029] = true,
   [0x202F] = true,
-  [0x205F] = true, 
+  [0x205F] = true,
   [0x3000] = true
 }
 
@@ -49,7 +49,7 @@ local function shape(text, lang, script, direction)
   local function get_fontid (pos)
     if pos <= #text then
       local currfont = text[pos].font
-      if currfont then 
+      if currfont then
         return currfont
       end
       return get_fontid(pos+1)
@@ -58,7 +58,7 @@ local function shape(text, lang, script, direction)
   end
   local new = {}
   local fontid = get_fontid(1)
-  if not fontid then 
+  if not fontid then
     return nil
   end
   local textdir = (direction == 1) and "rtl" or "ltr"
@@ -168,11 +168,10 @@ end
 
 function minihb.process_nodes(nodelist, groupcode)
   local text = {}
-  local all_nodes = {}
   local direction = 0
   local realdirection = tex.pagedir
   local i = 0
-  local lastfontid 
+  local lastfontid
   for n in node.traverse(nodelist) do
     i = i + 1
     if n.id == local_par_id then
@@ -186,18 +185,17 @@ function minihb.process_nodes(nodelist, groupcode)
       lastfontid = n.font
     end
   end
-  local fontinfo = fontbase.get_font(lastfontid) or {} 
+  local fontinfo = fontbase.get_font(lastfontid) or {}
   print("fontinfo", lastfontid, fontinfo)
   local language = fontinfo.language or "dflt"
   local script = fontinfo.script or "dflt"
   local shaped, fontopt = shape(text, language, script,  direction)
-  print("shaped", shaped, direction, realdir )
+  print("shaped", shaped, direction)
   local newnodes = make_nodes(shaped, text, fontopt)
   if #newnodes > 0 then
     local newpar = node.new("local_par")
     -- print("realdirection", realdirection)
     newpar.dir = realdirection
-    local last = newpar
     -- node.write(newpar)
     local penalty = node.new("penalty", 0)
     penalty.penalty = 10000
@@ -206,12 +204,12 @@ function minihb.process_nodes(nodelist, groupcode)
     parfillskip.stretch_order = 2
     local indent = node.new("hlist",3)
     indent.dir = "TRT"
-    indent.width = tex.parindent 
+    indent.width = tex.parindent
     table.insert(newnodes, penalty)
     table.insert(newnodes, parfillskip)
     table.insert(newnodes, indent)
     for k,v in ipairs(newnodes) do 
-      -- node.write(v) 
+      -- node.write(v)
       -- last.next = v
       -- last = v
       node.insert_after(newpar, node.tail(newpar), v)
