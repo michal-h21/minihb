@@ -176,14 +176,14 @@ end
 
 function minihb.process_nodes(nodelist, groupcode)
   local text = {}
-  local direction = 0
+  local direction = "ltr"
   local realdirection = tex.pagedir
   local i = 0
   local lastfontid
   for n in node.traverse(nodelist) do
     i = i + 1
     if n.id == local_par_id then
-      direction = (n.dir == "TRT") and 1 or 0
+      direction = (n.dir == "TRT") and "rtl" or "ltr"
       realdirection = n.dir
     elseif n.id == glue_id then
       text[#text+1] = {char = 32, type="space", pos = i, node = n}
