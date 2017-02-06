@@ -119,7 +119,6 @@ local function make_nodes(result, sourcetable,  fontoptions)
     local nodeoptions =  sourcetable[cluster] or {}
     local fontid = nodeoptions.font or lastfont or font.current()
     -- the font backmap needs utf8 character, not just codepoint
-    -- local shapedglyph = utfchar(v.codepoint)
     local char =  fontbase.unimap(fontid, v.codepoint) or 32 --fontoptions.backmap[v.codepoint]
     local fontdata = fontbase.get_font(fontid) or {}
     local resources = fontdata.descriptions or {}
