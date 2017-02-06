@@ -156,7 +156,6 @@ local function make_nodes(result, sourcetable,  fontoptions)
         return math.floor(v[field] / fontoptions.units_per_em * fontoptions.size)
       end
       -- deal with kerning
-      local x_advance = calc_dim "x_advance"
       -- width and height are set from font, we can't change them anyway
       -- n.height = calc_dim "y_advance"
       n.xoffset = (calc_dim "x_offset") * factor
@@ -164,10 +163,21 @@ local function make_nodes(result, sourcetable,  fontoptions)
       --node.write(n)
       nodetable[#nodetable+1] = n-- node.copy(n)
       lastfont = nodeoptions.font
-      -- detect kerning
-      -- we must rule out rounding errors first
-      -- we skip this for top to bottom direction
-      -- nodetable = get_kern(nodetable, n, calc_dim)
+      -- handle kerning
+      -- I am not really sure if it is correct in the RTL mode
+      local x_advance = calc_dim "x_advance" --* factor
+      if x_advance then -- and math.abs(x_advance - n.width) > 1 then
+        local kern = node.new "kern"
+        kern.kern = (x_advance - n.width  ) * factor
+        -- insert kern after the node in rtl mode
+        if factor < 0 then
+          nodetable[#nodetable+1] = kern
+          -- table.insert(nodetable, #nodetable, kern)
+        else
+          -- insert kern before the node
+          table.insert(nodetable, #nodetable, kern)
+        end
+      end
     end
   end--]]
   return nodetable
