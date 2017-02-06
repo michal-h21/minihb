@@ -115,7 +115,7 @@ local function make_nodes(result, sourcetable,  fontoptions)
     local char =  fontbase.unimap(fontid, v.codepoint) or 32 --fontoptions.backmap[v.codepoint]
     local fontdata = fontbase.get_font(fontid) or {}
     local resources = fontdata.descriptions or {}
-    print("wtf",v.codepoint, char, uchar(char), (resources[char] or {}).name , whitespace[char])
+    print("shaped results",v.codepoint, char, uchar(char), (resources[char] or {}).name , whitespace[char])
     -- local char =  fontoptions.backmap[v.codepoint]
     if whitespace[char] then
       -- local n = sourcetable[cluster].node
