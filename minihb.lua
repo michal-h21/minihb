@@ -10,12 +10,16 @@ local dir_id = node.id "dir"
 local glue_id = node.id "glue"
 
 local utfchar = unicode.utf8.char
+
+-- return Unicode character for a codepoint
+-- return space for characters in PUA
 local function uchar(char)
   return (char < 0x10FFFF) and utfchar(char) or " "
 end
 
 local usedfonts = {}
 
+-- Unicode codepoints for space characters
 local whitespace = {
   [0x0009] = true,
   [0x000A] = true,
@@ -45,7 +49,8 @@ local whitespace = {
 }
 
 
-local function shape(text, lang, script, direction)
+local function shape(text, lang, script, textdir)
+  -- we just return first font used in the shaped text
   local function get_fontid (pos)
     if pos <= #text then
       local currfont = text[pos].font
@@ -61,22 +66,25 @@ local function shape(text, lang, script, direction)
   if not fontid then
     return nil
   end
-  local textdir = (direction == 1) and "rtl" or "ltr"
+  -- LuaTeX uses TLT for ltr and TRT for rtl direction 
+  -- local textdir = (direction == 1) and "rtl" or "ltr"
   for _, x in ipairs(text) do
     new[#new+1] = x.char
     -- just use last used font
     -- fontid = x.font or font
   end
   local hb_font = fontbase.face(fontid)
+  -- process only fonts with HarfBuzz support
   if hb_font then
     local buf = harfbuzz.Buffer.new()
     local fontopt = fontbase.get_font(fontid)
     local features = fontbase.features(fontid)
     print("fontide+face", fontid, hb_font, fontopt.filename, lang, script, textdir, features)
     local reordered = bidi.get_visual_reordering(new, textdir)
+    -- print the paragraph after bidi reordering
     local xxx= {}
     for _, c in ipairs(reordered) do xxx[#xxx+1] = utfchar(c) end
-    print(table.concat(xxx))
+    print("reordered paragraph", table.concat(xxx))
     buf:set_cluster_level(harfbuzz.Buffer.HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
     buf:add_codepoints(reordered)
     if textdir == "rtl" then
