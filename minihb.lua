@@ -48,6 +48,32 @@ local whitespace = {
   [0x3000] = true
 }
 
+-- memoize Harfbuzz language objects
+local languages = {}
+local Lang = harfbuzz.Language.new
+local function get_lang(lang)
+  local hb_lang = languages[lang] or Lang(lang)
+  languages[lang] = hb_lang
+  return hb_lang
+end
+
+
+-- memoize Harfbuzz script objects
+local scripts = {}
+local Script = harfbuzz.Script.new
+local function get_script(script)
+  local hb_script = scripts[script] or Script(script)
+  scripts[script] = hb_script
+  return hb_script
+end
+
+-- memoize Harfbuzz text directions
+local directions = {}
+local function get_direction(textdir)
+  local dir = directions[textdir] or harfbuzz.Direction["HB_DIRECTION_" .. string.upper(textdir)]
+  directions[textdir] = dir
+  return dir
+end
 
 local function shape(text, lang, script, textdir)
   -- we just return first font used in the shaped text
@@ -90,7 +116,10 @@ local function shape(text, lang, script, textdir)
     if textdir == "rtl" then
       buf:reverse()
     end
-    harfbuzz.shape(hb_font, buf, { direction =  textdir, script = script, language = lang, features = features})
+    local hb_lang = get_lang(lang)
+    local hb_script = get_script(script)
+    local hb_dir = get_direction(textdir)
+    harfbuzz.shape(hb_font, buf, { direction =  hb_dir, script = hb_script, language = hb_lang, features = features})
     -- harfbuzz.shape(hb_font, buf, { direction =  textdir, script = script, language = lang, features="+liga"})
     if textdir == "rtl" then
       buf:reverse()
